@@ -1,81 +1,94 @@
-// Banker's Algorithm
 #include <stdio.h>
-int main()
-{
-	// P0, P1, P2, P3, P4 are the Process names here
 
-	int n, m, i, j, k;
-	n = 5; // Number of processes
-	m = 3; // Number of resources
-	int alloc[5][3] = { { 0, 1, 0 }, // P0 // Allocation Matrix
-						{ 2, 0, 0 }, // P1
-						{ 3, 0, 2 }, // P2
-						{ 2, 1, 1 }, // P3
-						{ 0, 0, 2 } }; // P4
+#define MAX_PROCESSES 10
+#define MAX_RESOURCES 10
 
-	int max[5][3] = { { 7, 5, 3 }, // P0 // MAX Matrix
-					{ 3, 2, 2 }, // P1
-					{ 9, 0, 2 }, // P2
-					{ 2, 2, 2 }, // P3
-					{ 4, 3, 3 } }; // P4
+int main() {
+    int processes, resources, i, j, k;
+    int found;
+    int available[MAX_RESOURCES];
+    int maximum[MAX_PROCESSES][MAX_RESOURCES];
+    int allocation[MAX_PROCESSES][MAX_RESOURCES];
+    int need[MAX_PROCESSES][MAX_RESOURCES];
+    int work[MAX_RESOURCES];
+    int finish[MAX_PROCESSES];
+    int count, safeSequence[MAX_PROCESSES];
 
-	int avail[3] = { 3, 3, 2 }; // Available Resources
+    // Input the number of processes and resources
+    printf("Enter the number of processes: ");
+    scanf("%d", &processes);
 
-	int f[n], ans[n], ind = 0;
-	for (k = 0; k < n; k++) {
-		f[k] = 0;
-	}
-	int need[n][m];
-	for (i = 0; i < n; i++) {
-		for (j = 0; j < m; j++)
-			need[i][j] = max[i][j] - alloc[i][j];
-	}
-	int y = 0;
-	for (k = 0; k < 5; k++) {
-		for (i = 0; i < n; i++) {
-			if (f[i] == 0) {
+    printf("Enter the number of resources: ");
+    scanf("%d", &resources);
 
-				int flag = 0;
-				for (j = 0; j < m; j++) {
-					if (need[i][j] > avail[j]){
-						flag = 1;
-						break;
-					}
-				}
+    // Input available resources
+    printf("Enter the available resources: ");
+    for (i = 0; i < resources; ++i)
+        scanf("%d", &available[i]);
 
-				if (flag == 0) {
-					ans[ind++] = i;
-					for (y = 0; y < m; y++)
-						avail[y] += alloc[i][y];
-					f[i] = 1;
-				}
-			}
-		}
-	}
+    // Input allocation matrix
+    printf("Enter the allocation matrix:\n");
+    for (i = 0; i < processes; ++i) {
+        printf("Process %d allocation: ", i);
+        for (j = 0; j < resources; ++j)
+            scanf("%d", &allocation[i][j]);
+    }
 
-	int flag = 1;
-	
-	for(int i=0;i<n;i++)
-	{
-	if(f[i]==0)
-	{
-		flag=0;
-		printf("The following system is not safe");
-		break;
-	}
-	}
-	
-	if(flag==1)
-	{
-	printf("Following is the SAFE Sequence\n");
-	for (i = 0; i < n - 1; i++)
-		printf(" P%d ->", ans[i]);
-	printf(" P%d", ans[n - 1]);
-	}
-	
+    // Input maximum matrix and calculate need matrix
+    printf("Enter the maximum matrix:\n");
+    for (i = 0; i < processes; ++i) {
+        printf("Process %d maximum: ", i);
+        for (j = 0; j < resources; ++j) {
+            scanf("%d", &maximum[i][j]);
+            need[i][j] = maximum[i][j] - allocation[i][j];
+        }
+    }
 
-	return (0);
+    // Banker's Algorithm Initialization
+    for (i = 0; i < processes; ++i)
+        finish[i] = 0;
 
-	// This code is contributed by Deep Baldha (CandyZack)
+    for (i = 0; i < resources; ++i)
+        work[i] = available[i];
+
+    count = 0;
+
+    // Banker's Algorithm Execution
+    while (count < processes) {
+        found = 0;
+        for (i = 0; i < processes; ++i) {
+            if (finish[i] == 0) {
+                int j;
+                // Check if the process can be satisfied with the available resources
+                for (j = 0; j < resources; ++j) {
+                    if (need[i][j] > work[j])
+                        break;
+                }
+                // If the process can be satisfied, mark it as finished, update available resources
+                if (j == resources) {
+                    for (k = 0; k < resources; ++k)
+                        work[k] += allocation[i][k];
+
+                    safeSequence[count++] = i;
+                    finish[i] = 1;
+                    found = 1;
+                }
+            }
+        }
+        // If no process can be satisfied, the system is in an unsafe state
+        if (found == 0) {
+            printf("System is in an unsafe state! DEADLOCK DETECTED**\n");
+            break;
+        }
+    }
+
+    // If all processes are finished, print the safe sequence
+    if (count == processes) {
+        printf("System is in a safe state (NO DEADLOCK).\nSafe sequence is: ");
+        for (i = 0; i < (processes - 1); ++i) {
+            printf("P%d -> ", safeSequence[i]);
+        }
+        printf("P%d\n", safeSequence[processes - 1]);
+    }
+    return 0;
 }
-
