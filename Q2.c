@@ -2,7 +2,7 @@
 
 int main() {
     int numberOfProcesses, sum = 0, count = 0, remainingProcesses, quantum, wt = 0, tat = 0;
-    int arrivalTime[10], burstTime[10], tempBurstTime[10];
+    int arrivalTime[10], burstTime[10], tempBurstTime[10], completionTime[10];
     int i;
 
     // Get the number of processes
@@ -19,6 +19,7 @@ int main() {
         printf("Burst time: ");
         scanf("%d", &burstTime[i]);
         tempBurstTime[i] = burstTime[i];
+        completionTime[i] = -1;  // Initialize completion time to -1
     }
 
     // Input the time quantum
@@ -26,14 +27,15 @@ int main() {
     scanf("%d", &quantum);
 
     // Display the header for the process table
-    printf("\nProcess No \tBurst Time \tTurnaround Time \tWaiting Time\n");
+    printf("\nProcess No \tBurst Time \tCompletion Time \tTurnaround Time \tWaiting Time\n");
 
     // Implement the Round Robin scheduling algorithm
-    for (sum = 0,i = 0; remainingProcesses != 0;) {
+    for (sum = 0, i = 0; remainingProcesses != 0;) {
         if (tempBurstTime[i] <= quantum && tempBurstTime[i] > 0) {
             sum += tempBurstTime[i];
             tempBurstTime[i] = 0;
             count = 1;
+            completionTime[i] = sum;  // Update completion time
         } else if (tempBurstTime[i] > 0) {
             tempBurstTime[i] -= quantum;
             sum += quantum;
@@ -41,18 +43,13 @@ int main() {
 
         if (tempBurstTime[i] == 0 && count == 1) {
             remainingProcesses--;
-            printf("  %d\t\t  %d\t\t\t%d\t\t\t%d\n", i + 1, burstTime[i], sum - arrivalTime[i], sum - arrivalTime[i] - burstTime[i]);
+            printf("  %d\t\t  %d\t\t\t%d\t\t\t%d\t\t\t%d\n", i + 1, burstTime[i], completionTime[i], sum - arrivalTime[i], sum - arrivalTime[i] - burstTime[i]);
             wt += sum - arrivalTime[i] - burstTime[i];
             tat += sum - arrivalTime[i];
             count = 0;
         }
 
-        if (i == numberOfProcesses - 1) {
-            i = 0;
-        } 
-        else{
-            i++;
-        }
+        i = (i == numberOfProcesses - 1) ? 0 : i + 1;
     }
 
     // Calculate and display average turnaround time and waiting time
@@ -64,4 +61,3 @@ int main() {
 
     return 0;
 }
-
