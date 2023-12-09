@@ -47,7 +47,12 @@ int main() {
             count = 0;
         }
 
-        i = (i == numberOfProcesses - 1) ? 0 : i + 1;
+        if (i == numberOfProcesses - 1) {
+            i = 0;
+        } 
+        else{
+            i++;
+        }
     }
 
     // Calculate and display average turnaround time and waiting time
